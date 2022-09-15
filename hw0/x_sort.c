@@ -1,4 +1,7 @@
+//assignment0insertionsort
+
 # include <stdio.h>
+# include <math.h>
 
 // A simple program to sort an array of integers in C
 
@@ -9,7 +12,17 @@
 // Side Effect: The input array is sorted from least to greatest
 void sort(int *arr, int len)
 {
-	return;
+	int i, key, j;
+	for (i = 1; i < len; i++) {
+		key = arr[i];
+		j = i -1;
+
+		while (j >= 0 && arr[j] > key) {
+			arr[j + 1] = arr[j];
+			j = j -1;
+		}
+		arr[j + 1] = key;
+}
 }
 
 /* END YOUR WORK */
@@ -39,6 +52,9 @@ int main()
 {
 	int test_arr[10] = {8,6,4,2,0,1,3,5,7,9};
 	sort(test_arr, 10);
+	for (int i = 1; i < 10; i++)
+	{ printf("%d ", test_arr[i]);
+	 }
 	if (is_sorted(test_arr, 10))
 	{
 		printf("Good job!\n");
