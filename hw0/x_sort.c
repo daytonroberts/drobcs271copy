@@ -22,7 +22,7 @@ void sort(int *arr, int len)
 			j = j -1;
 		}
 		arr[j + 1] = key;
-}
+} // I object to this indentation
 }
 
 /* END YOUR WORK */
@@ -50,7 +50,7 @@ int is_sorted(int *arr, int len)
 
 int main()
 {
-	int test_arr[10] = {8,6,4,2,0,1,3,5,7,9};
+	int test_arr[10] = {9,6,4,2,8,1,3,5,7,0};
 	sort(test_arr, 10);
 	for (int i = 1; i < 10; i++)
 	{ printf("%d ", test_arr[i]);
