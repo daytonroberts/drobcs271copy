@@ -77,8 +77,7 @@ int main(int argc, char const *argv[])
 		
 		while (1) {
 			fgets(buff, sizeof(buff), stdin);
-			write(sock, buff, strlen(buff));
-		
+			write(sock, buff, strlen(buff));	
 	}
 
 	if (argv[1][1] == 'h')
