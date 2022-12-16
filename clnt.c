@@ -1,67 +1,91 @@
-//CLNT
-
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
+#include <ncurses.h>
+#include <sys/socket.h> 
 #include <arpa/inet.h>
+#include <time.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-// debug
-#define VERBOSE 1
-#define BUFF 16
 
-// booleans
-#define TRUE 1
-#define FALS 0
-typedef int bool;
+#define PORT 8080 
+#define DOMAIN AF_INET
+#define BUFF_SIZE 1024
+#define LOOPBACK "::1"
+#define CHECK1 "check 1"
+#define CHECK2 "check 2"
+#define CHECK3 "check 3"
 
-// gameplay
-#define HIGH 23
-#define WIDE 80
 
-#define SNAK '&'
-#define SNEK 'O'
 
-#define REDO 'r'
-#define QUIT 'q'
-
-#define FORE 'w'
-#define BACK 's'
-#define LEFT 'a'
-#define RITE 'd'
-
-int main(int argc, char argv[])
+int main(int argc, char const *argv[])
 {
-    //creating socket
-    int sock;
-    sock = socket(AF_INET, SOCK_STREAM, 0);
+	printf("%s, expects (1) arg, %d provided", argv[0], argc-1);
+	if (argc == 2)
+	{
+		printf(": \"%s\".\n", argv[1]);
+	} else {
+		printf(".\n");
+		return 1;
+	}
 
-    // specifying address for socket
-    struct sockaddr_in server_address;
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(9002);
-    server_address.sin_addr.s_addr = INADDR_ANY;
+	if (argv[1][1] == 's')
+	{
+		printf("Starting server...\n");
+		
+		int sock;
+		sock = socket(DOMAIN, SOCK_STREAM, 0);
+		
+		struct sockaddr_in address; 
+		address.sin_family = DOMAIN; 
+		address.sin_port = htons(PORT); 
+		inet_pton(DOMAIN, "::1", &address.sin_addr);
+		
+		bind(sock, (struct sockaddr*) &address, sizeof(address));
+		listen(sock, 3);
+		
+		int c_sock;
+		c_sock = accept(sock, NULL, NULL);
+		
+		void *incoming[BUFF_SIZE];
+		
+		while (1) {
+			read(c_sock, incoming, sizeof(incoming));
+			printf("%s\n", (char *)incoming);
+		}
+			
+	}
 
-    int connection_status = connect(sock, (struct sockaddr) &server_address, sizeof(server_address));
-    //error checking
-    if (connection_status == -1)
-    {
-        printf("There was an error making connection to the remote socket \n\n");
-    }
+	if (argv[1][1] == 'c')
+	{
+		printf("Starting client...\n");
+		
+		int sock;
+		struct sockaddr_in address; 
 
-    while (1) {
-        char str[256];
-        fgets(str, 256, stdin);
-        write(sock, str, sizeof(str));
-    }
+		sock = socket(DOMAIN, SOCK_STREAM, 0);
 
+		address.sin_family = DOMAIN; 
 
-    //close sock
+		address.sin_port = htons(PORT);
+		inet_pton(DOMAIN, "::1", &address.sin_addr); 
+
+		connect(sock, (struct sockaddr*) &address, sizeof(address));
+
+		char buff[BUFF_SIZE];
+		
+		while (1) {
+			fgets(buff, sizeof(buff), stdin);
+			write(sock, buff, strlen(buff));
+		
+	}
+
+	if (argv[1][1] == 'h')
+	{
+		printf("HELP: Usage:  -s for server, -c for client\n");
+	}
 
     return 0;
-}
+	}
+}	
