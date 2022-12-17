@@ -1,3 +1,6 @@
+// this is 100% working snake, except it doesn't grow, 
+// but eats food and dies on wall as intended, also quits and restarts
+
 #include <stdio.h>
 #include <ncurses.h>
 #include <sys/socket.h> 
