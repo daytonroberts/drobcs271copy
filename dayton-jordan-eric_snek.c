@@ -21,7 +21,7 @@
 #define BUFF 16
 
 // gameplay
-#define HIGH 8
+#define HIGH 12
 #define WIDE 24
 
 #define CHAR '@'
@@ -110,7 +110,14 @@ int search(struct plist* plist, void *value) {
   	return 0;
 }*/
 
-int make_scr(int *xety, WINDOW *win){
+int make_scr(int *xety, WINDOW *win, int *food){
+	/*if (search(p, food)) {
+        	while(search(p, food)) {
+            		food[0] = (rand() % HIGH - 2) + 1;
+            		food[1] = (rand() % WIDE - 2) + 1;
+       		}
+    	}*/
+	
 	werase(win);
 	wrefresh(win);
 	
@@ -122,8 +129,8 @@ int make_scr(int *xety, WINDOW *win){
 	
 	char line[WIDE + 2]; // 80 printable characters + new line + null terminator
 	
-	line[0       ] = '|';
-	line[WIDE - 1] = '|';
+	line[0       ] = '#';
+	line[WIDE - 1] = '#';
 	line[WIDE    ] = '\n';
 	line[WIDE + 1] = '\0';	
 		
@@ -135,12 +142,12 @@ int make_scr(int *xety, WINDOW *win){
 		{
 			line[j] = ' ';
 			if (i == 0 || i == HIGH - 1) { // top or bottom
-				line[j] = '-';
-			} if (i == (HIGH/2) && j == (3*WIDE/4)) { // food
-				line[j] = CHAR;
-			} else if (i == xety[0] && j == xety[1]) { // snek
+				line[j] = '#';
+			} if (i == xety[0] && j == xety[1]) { // snek
 				line[j] = HEAD;
-			}
+			} else if ((i == (int)food[0]) && (j == (int)food[1])) { // food
+				line[j] = CHAR;
+			} 
 		}
 		printw("%s",line);
 		refresh();
@@ -148,23 +155,29 @@ int make_scr(int *xety, WINDOW *win){
 	return 0;
 }
 
-int snek_move(char dirc, int *xety, WINDOW *win) {
-	if (xety[0] == 2 || xety[0] == HIGH - 2 || xety[1]== 1 || xety[1]== WIDE - 2) {
-		printw("You have hit a wall, press r to restart");
+int snek_move(char dirc, int *xety, WINDOW *win, int *food) {
+	printw("%d, %d\n", xety[0], xety[1]);
+	if ((xety[0] == 2 && dirc == FORE) || (xety[0] == HIGH - 2 && dirc == BACK) || (xety[1] == 1 && dirc == LEFT) || (xety[1] == WIDE - 2 && dirc == RITE)) {
+		//printw("You have hit a wall, press r to restart");
 		refresh();
-	} else if (FORE == dirc) {
+        } else if (FORE == dirc) {
 			xety[0]--;
-		} else if (BACK == dirc) {
+	} else if (BACK == dirc) {
 			xety[0]++;
-		} else if (LEFT == dirc) {
+	} else if (LEFT == dirc) {
 			xety[1]--;
-		} else if (RITE == dirc) {
+	} else if (RITE == dirc) {
 			xety[1]++;
-		} else {
-			return 0; // quit || error case
-			endwin();
+	} else {
+		return 0; // quit || error case
+		endwin();
 	}
-	make_scr(xety, win);
+	while (xety[0] == food[0] && xety[1] == food[1]) {
+		srand(time(0));
+		food[0] = (rand() % (HIGH - 2 - 2)) + 2;
+        	food[1] = (rand() % (WIDE - 2 - 1)) + 1;
+	}
+	make_scr(xety, win, food);
 	
 }
 
@@ -202,15 +215,21 @@ int main(int argc, char const *argv[])
 		int xety[2];
 		xety[0] = (HIGH/2);
 		xety[1] = (WIDE/2);
+		
+		int food[2];
+		srand(time(0));
+		food[0] = (rand() % (HIGH - 2 - 2)) + 2;
+        	food[1] = (rand() % (WIDE - 2 - 1)) + 1;
+		
 		WINDOW *win;
-		make_scr(xety, win);
+		make_scr(xety, win, food);
 		while (1) {
 			fcntl(c_sock, F_SETFL, fcntl(c_sock, F_GETFL) | O_NONBLOCK);
             		sleep(1);
             		int numRead = read(c_sock, incoming, sizeof(incoming));
             		if (numRead > 0) {
                 		fcntl(c_sock, F_SETFL, fcntl(c_sock, F_GETFL) & ~O_NONBLOCK);
-                		printw("You said: %s", (char *)incoming);
+                		//printw("You said: %s", (char *)incoming);
                 		refresh();
             		}
             		if ((char)incoming[0] == QUIT) { 
@@ -222,9 +241,9 @@ int main(int argc, char const *argv[])
 				refresh();
               			xety[0] = (HIGH/2);
 				xety[1] = (WIDE/2);
-            			make_scr(xety, win);
+            			make_scr(xety, win, food);
                		}
-            		snek_move((char)incoming[0], xety, win);
+            		snek_move((char)incoming[0], xety, win, food);
 		}
 	}
 
@@ -248,7 +267,6 @@ int main(int argc, char const *argv[])
 		
 		while (1) {
 			fgets(buff, sizeof(buff), stdin);
-			
 			write(sock, buff, strlen(buff));
 			if ((char)buff[0] == QUIT) {exit(-1);}	
 		}
