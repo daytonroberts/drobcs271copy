@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define PORT 8080 
+#define PORT 8082 
 #define DOMAIN AF_INET
 #define BUFF_SIZE 2
 #define LOOPBACK "::1"

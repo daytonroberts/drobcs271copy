@@ -1,0 +1,1 @@
+I couldn't get the server and client to talk, I think due to missing setsockopt, but I'm running out of time to submit grades and it looks pretty good to me on a lot of the critical bits. I do agree you need some sort of memory management regime to save game states, but that's not as involved as the networking and ncurses nonsense. Good job!
